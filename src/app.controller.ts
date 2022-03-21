@@ -1,6 +1,5 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ResponseDto } from './dto/response-dto';
 
 @Controller('webhook')
 export class AppController {
@@ -8,15 +7,18 @@ export class AppController {
     timestamp: true,
   });
   constructor(private readonly appService: AppService) {}
-
-  @Post()
-  getHello(): string {
-    return this.appService.getHello();
-  }
   @Post('/github')
-  run(@Body() data: ResponseDto): any {
+  getAllDataGithub(@Body() body): string {
     //Getting all the json data
     this.logger.verbose('Got webhook from Github');
-    return this.appService.run(data);
+    //Parsing to get needed data
+    return this.appService.getDataForGithub(body);
+  }
+  @Post('/bitbucket')
+  getAllDataBitbucket(@Body() body): string {
+    //Getting all the json data
+    this.logger.verbose('Got webhook from Bitbucket');
+    //Parsing to get needed data
+    return this.appService.getDataForBitbucket(body);
   }
 }

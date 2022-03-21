@@ -1,12 +1,12 @@
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
-export class GithubActorDto {
+export class BitbucketActorDto {
   @IsString()
   displayName: string;
   @IsString()
   username: string;
   @IsString()
-  @IsEmail()
+  //@IsEmail()
   @IsOptional()
   email?: string;
   @IsString()
