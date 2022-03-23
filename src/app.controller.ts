@@ -8,17 +8,16 @@ export class AppController {
   });
   constructor(private readonly appService: AppService) {}
   @Post('/github')
-  getAllDataGithub(@Body() body): string {
-    //Getting all the json data
+  getAllDataGithub(@Body() body): number {
+    //Getting all the JSON data
+    console.log(body);
     this.logger.verbose('Got webhook from Github');
-    //Parsing to get needed data
-    return this.appService.getDataForGithub(body);
+    return this.appService.getDataFromGithub(body);
   }
   @Post('/bitbucket')
-  getAllDataBitbucket(@Body() body): string {
-    //Getting all the json data
+  getAllDataBitbucket(@Body() body): number {
+    //Getting all the JSON data
     this.logger.verbose('Got webhook from Bitbucket');
-    //Parsing to get needed data
-    return this.appService.getDataForBitbucket(body);
+    return this.appService.getDataFromBitbucket(body);
   }
 }

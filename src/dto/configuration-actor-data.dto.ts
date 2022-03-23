@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
-export class GithubActorDto {
+export class ConfigurationActorDataDto {
   @IsString()
   displayName: string;
   @IsString()
