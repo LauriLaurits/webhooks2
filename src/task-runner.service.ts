@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
 import { ConfigurationDataDto } from './dto/configuration-data.dto';
-import { mkdtempSync } from 'fs';
+import { existsSync, mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import {
@@ -30,7 +30,7 @@ export class TaskRunnerService {
   }
 
   // CRON after every X minutes checks if there is something in the queue. If Yes then starts runTask().
-  @Cron('* 10 * * *')
+  @Cron('* * * * *')
   async handleCron() {
     // If queue is empty do nothing.
     if (this.queue.length === 0) {
@@ -66,11 +66,18 @@ export class TaskRunnerService {
       tmpDir = mkdtempSync(join(tmpdir(), 'tempDir-'));
       this.logger.verbose(`Created new tmp directory ${tmpDir}`);
       cloneResult = await this.cloneRepository(runConfiguration, tmpDir);
-      console.log(`${tmpDir.name}/build-config.js`);
+      //console.log(`${tmpDir.name}/build-config.js`);
 
       console.log(`Clone result: ${JSON.stringify(cloneResult)}`);
     } catch (e) {
       this.logger.error(e);
+    }
+    if (existsSync(tmpDir)) {
+      rmSync(tmpDir, {
+        recursive: true,
+      });
+      this.logger.verbose(`Deleted tmp directory ${tmpDir}`);
+      this.lastTaskStartedAt = null;
     }
   }
 
