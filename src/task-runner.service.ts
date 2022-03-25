@@ -60,35 +60,23 @@ export class TaskRunnerService {
     );
     // Created empty directory to "AppData\Local\Temp\*"
     let tmpDir;
-    let tmpDirName;
-    let tmpDirNew;
     let cloneResult: ExecutionResultDto = null;
     //let getDataFromConfig: ExecutionResultDto = null;
     let switchBranch: ExecutionResultDto = null;
 
     try {
       tmpDir = mkdtempSync(join(tmpdir(), 'tempDir-'));
-      tmpDirNew = tmpDir.replaceAll('\\', '/');
+
       this.logger.verbose(`Created new tmp directory ${tmpDir}`);
-      tmpDirName = tmpDir.slice(tmpDir.lastIndexOf('\\')).replace('\\', '');
+      //tmpDirName = tmpDir.slice(tmpDir.lastIndexOf('\\')).replace('\\', '');
       cloneResult = await this.cloneRepository(runConfiguration, tmpDir);
       console.log(`Clone result: ${JSON.stringify(cloneResult)}`);
-      // Siiamaani korras
-      switchBranch = await this.checkoutBranch(
-        runConfiguration,
-        tmpDir,
-        tmpDirName,
-        tmpDirNew,
-      );
+      switchBranch = await this.checkoutBranch(runConfiguration, tmpDir);
       console.log(`Switched to : ${JSON.stringify(switchBranch)}`);
-      /*getDataFromConfig = await this.getDataFromConfig(
-        runConfiguration,
-        tmpDir,
-      );*/
-
-      /*
-      console.log(`COPY Result: ${JSON.stringify(getDataFromConfig)}`);
-*/
+      //console.log(await this.buildData(tmpDir, data));
+      const test = await this.buildData(tmpDir);
+      console.log(test);
+      //console.log('This is JSON: ' + JSON.stringify(test));
     } catch (e) {
       this.logger.error(e);
     }
@@ -143,47 +131,18 @@ export class TaskRunnerService {
     console.log(`Clone Url:  ${runConfiguration.sshUrl}`);
     return this.runCmd('git', ['clone', runConfiguration.sshUrl, tmpDir]);
   }
+  // Change branch to current branch
   private async checkoutBranch(
     runConfiguration: ConfigurationDataDto,
     tmpDir: string,
-    tmpDirName: string,
-    tmpDirNew: string,
   ) {
     this.logger.verbose(`Switched to branch ${runConfiguration.branchName}`);
-
-    this.logger.verbose(`Start:  ${tmpDir}`);
-    this.logger.verbose(`Name:  ${tmpDirName}`);
-    this.logger.verbose(`New:  ${tmpDirNew}`);
-    await this.runCmd('cd', ['']);
-    await this.runCmd('cd', [tmpDirNew]);
-    this.logger.verbose(`Start git checkout ${runConfiguration.branchName}`);
-    await this.runCmd('git', ['checkout', runConfiguration.branchName]);
-    this.logger.verbose(`Start console log ${runConfiguration.branchName}`);
-    //return require(tmpDir + '/build-config.js');
-    console.log(
-      'Url: ' +
-        tmpDir +
-        '/' +
-        runConfiguration.repositoryName +
-        '/build-config.js',
-    );
-
-    return this.runCmd('cp', [
-      tmpDir + '/' + runConfiguration.repositoryName + '/build-config.js',
-      tmpDir + '/bla.js',
-    ]);
+    return this.runCmd('git', ['checkout', runConfiguration.branchName], {
+      cwd: tmpDir,
+    });
   }
-
-  /* private async getDataFromConfig(
-    runConfiguration: ConfigurationDataDto,
-    tmpDir: string,
-  ) {
-    this.logger.verbose(`CD into project and get data config`);
-    return ;*/
-  //return this.runCmd('cp', ['build-config.js', 'copy.js']);
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  /*return require(tmpDir +
-      '/' +
-      runConfiguration.repositoryName +
-      '/build-config.js');*/
+  //Get data from build config json
+  private async buildData(tmpDir: string) {
+    return await this.runCmd('cat', ['build-config.js'], { cwd: tmpDir });
+  }
 }
