@@ -6,18 +6,18 @@ export class AppController {
   private readonly logger = new Logger(this.constructor.name, {
     timestamp: true,
   });
+
   constructor(private readonly appService: AppService) {}
+  //TODO validation for webhook request
   @Post('/github')
-  getAllDataGithub(@Body() body): number {
-    //Getting all the JSON data
-    console.log(body);
+  webhookGithub(@Body() body): number {
     this.logger.verbose('Got webhook from Github');
-    return this.appService.getDataFromGithub(body);
+    return this.appService.webhookGithub(body);
   }
+
   @Post('/bitbucket')
-  getAllDataBitbucket(@Body() body): number {
-    //Getting all the JSON data
+  webhookBitbucket(@Body() body): number {
     this.logger.verbose('Got webhook from Bitbucket');
-    return this.appService.getDataFromBitbucket(body);
+    return this.appService.webhookBitbucket(body);
   }
 }

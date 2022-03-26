@@ -14,7 +14,9 @@ import { ExecutionResultDto } from './dto/execution-result.dto';
 
 @Injectable()
 export class TaskRunnerService {
-  private readonly logger = new Logger(this.constructor.name);
+  private readonly logger = new Logger(this.constructor.name, {
+    timestamp: true,
+  });
   private readonly queue: ConfigurationDataDto[] = [];
   private lastTaskStartedAt: DateTime = null;
   private runningProcess: ChildProcessWithoutNullStreams;
@@ -23,29 +25,30 @@ export class TaskRunnerService {
     this.logger.verbose('TaskRunner initialized');
   }
 
-  //Adds task to queue
   addTaskQueue(runConfiguration: ConfigurationDataDto): number {
-    console.log('AddTaskQueue json: ' + JSON.stringify(runConfiguration));
+    this.logger.verbose(
+      `Added task to queue with configuration: ${JSON.stringify(
+        runConfiguration,
+      )}`,
+    );
     return this.queue.push(runConfiguration);
   }
 
-  // CRON after every X minutes checks if there is something in the queue. If Yes then starts runTask().
-  @Cron('* * * * *')
+  @Cron('*/1 * * * * *') // for testing
   async handleCron() {
-    // If queue is empty do nothing.
     if (this.queue.length === 0) {
-      //console.log(`Queue length:  ${this.queue.length}`);
       return;
     }
+
     if (this.lastTaskStartedAt !== null) {
       this.logger.verbose(
-        `Task already in progress. Cant run another ${this.lastTaskStartedAt.toISO()} . Queue length:  ${
+        `Task already in progress. Can't run another ${this.lastTaskStartedAt.toISO()} . Queue length:  ${
           this.queue.length
         }`,
       );
       return;
     }
-    //If there is something in queue and another task is not running start another task.
+
     if (this.queue.length !== 0) {
       await this.runTask(this.queue.shift());
     }
@@ -54,33 +57,41 @@ export class TaskRunnerService {
   private async runTask(runConfiguration: ConfigurationDataDto) {
     this.lastTaskStartedAt = DateTime.now();
     this.logger.verbose(
-      `Started runTask() with configuration: ${JSON.stringify(
+      `Started to run task with configuration: ${JSON.stringify(
         runConfiguration,
       )}`,
     );
-    // Created empty directory to "AppData\Local\Temp\*"
+
     let tmpDir;
     let cloneResult: ExecutionResultDto = null;
-    //let getDataFromConfig: ExecutionResultDto = null;
     let switchBranch: ExecutionResultDto = null;
-
+    let buildConfig;
+    //TODO checks if /build-config.js is there if not clean tmpDir
     try {
-      tmpDir = mkdtempSync(join(tmpdir(), 'tempDir-'));
-
-      this.logger.verbose(`Created new tmp directory ${tmpDir}`);
-      //tmpDirName = tmpDir.slice(tmpDir.lastIndexOf('\\')).replace('\\', '');
+      tmpDir = this.makeTemporaryDirectory();
       cloneResult = await this.cloneRepository(runConfiguration, tmpDir);
-      console.log(`Clone result: ${JSON.stringify(cloneResult)}`);
       switchBranch = await this.checkoutBranch(runConfiguration, tmpDir);
+      buildConfig = this.getBuildConfig(tmpDir);
+      //TODO execute build commands
+      console.log('BuildConfig clientName: ' + buildConfig.clientName);
+      console.log('BuildConfig projectName: ' + buildConfig.projectName);
+      console.log('BuildConfig BuildDirectory: ' + buildConfig.buildDirectory);
+      console.log(
+        'BuildConfig NpmBuildCommand: ' + buildConfig.npmBuildCommand,
+      );
+      console.log(
+        'BuildConfig branchesToFollow: ' + buildConfig.branchesToFollow,
+      );
+      console.log(`Clone result: ${JSON.stringify(cloneResult)}`);
       console.log(`Switched to : ${JSON.stringify(switchBranch)}`);
-      //console.log(await this.buildData(tmpDir, data));
-      const test = await this.buildData(tmpDir);
-      console.log(test);
-      //console.log('This is JSON: ' + JSON.stringify(test));
     } catch (e) {
       this.logger.error(e);
     }
-    /*if (existsSync(tmpDir)) {
+    //TODO Delete tempDir
+
+    // Delete tmp directory after use
+    // Import existsSync, rmSync
+    /* if (existsSync(tmpDir)) {
       rmSync(tmpDir, {
         recursive: true,
       });
@@ -123,26 +134,29 @@ export class TaskRunnerService {
       });
     });
   }
-  //Clone Repository to temp folder
+
+  makeTemporaryDirectory() {
+    return mkdtempSync(join(tmpdir(), 'tempDir-'));
+  }
+
   private async cloneRepository(
     runConfiguration: ConfigurationDataDto,
     tmpDir: string,
   ) {
-    console.log(`Clone Url:  ${runConfiguration.sshUrl}`);
+    this.logger.verbose(`Cloned from URL:  ${runConfiguration.sshUrl}`);
     return this.runCmd('git', ['clone', runConfiguration.sshUrl, tmpDir]);
   }
-  // Change branch to current branch
+
   private async checkoutBranch(
     runConfiguration: ConfigurationDataDto,
     tmpDir: string,
   ) {
-    this.logger.verbose(`Switched to branch ${runConfiguration.branchName}`);
+    this.logger.verbose(`Switched to branch: ${runConfiguration.branchName}`);
     return this.runCmd('git', ['checkout', runConfiguration.branchName], {
       cwd: tmpDir,
     });
   }
-  //Get data from build config json
-  private async buildData(tmpDir: string) {
-    return await this.runCmd('cat', ['build-config.js'], { cwd: tmpDir });
+  getBuildConfig(tmpDir) {
+    return require(tmpDir + '/build-config.js');
   }
 }
