@@ -31,6 +31,7 @@ export class AppService {
   webhookBitbucket(body): number {
     const sshUrl = `git@bitbucket.org:${body.repository.full_name}.git`;
     const rawEmail = body.push.changes[0].commits[0].author.raw;
+    // todo siin vaja kasutada mingit libaryt mitte parsemist
     const email = rawEmail
       .slice(rawEmail.indexOf(' <'), rawEmail.lastIndexOf('>'))
       .replace(' <', '');
