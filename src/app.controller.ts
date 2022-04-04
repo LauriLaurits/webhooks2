@@ -1,7 +1,7 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { AppService } from './app.service';
-import { GithubPayloadDto } from './dto/github/github-payload.dto';
-import { BitbucketPayloadDto } from './dto/bitbucket/bitbucket-payload.dto';
+import { GithubPayloadDto } from './dtos/github/github-payload.dto';
+import { BitbucketPayloadDto } from './dtos/bitbucket/bitbucket-payload.dto';
 
 @Controller('webhook')
 export class AppController {

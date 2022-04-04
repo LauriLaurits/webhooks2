@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
-import { ConfigurationDataDto } from './dto/configuration-data.dto';
+import { ConfigurationDataDto } from './dtos/configuration-data.dto';
 import { mkdtempSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -10,7 +10,7 @@ import {
   spawn,
   SpawnOptionsWithoutStdio,
 } from 'child_process';
-import { ExecutionResultDto } from './dto/execution-result.dto';
+import { ExecutionResultDto } from './dtos/execution-result.dto';
 
 @Injectable()
 export class TaskRunnerService {

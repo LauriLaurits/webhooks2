@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TaskRunnerService } from './task-runner.service';
-import { ConfigurationDataDto } from './dto/configuration-data.dto';
+import { ConfigurationDataDto } from './dtos/configuration-data.dto';
 
 @Injectable()
 export class AppService {

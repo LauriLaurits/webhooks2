@@ -1,17 +1,17 @@
 import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { BitbucketFullNameDto } from './bitbucket-fullname.dto';
 import { BitbucketActorDto } from './bitbucket-actor.dto';
-import { BitbucketChangesDto } from './bitbucket-changes.dto';
+import { BitbucketRepositoryDto } from './bitbucket-repository.dto';
+import { BitbucketPushDto } from './bitbucket-push.dto';
 
 export class BitbucketPayloadDto {
   @ValidateNested()
-  @Type(() => BitbucketFullNameDto)
-  repository: BitbucketFullNameDto;
+  @Type(() => BitbucketRepositoryDto)
+  repository: BitbucketRepositoryDto;
 
   @ValidateNested()
-  @Type(() => BitbucketChangesDto)
-  push: BitbucketChangesDto;
+  @Type(() => BitbucketPushDto)
+  push: BitbucketPushDto;
 
   @ValidateNested()
   @Type(() => BitbucketActorDto)

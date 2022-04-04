@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class BitbucketFullNameDto {
+export class BitbucketRepositoryDto {
   @IsNotEmpty()
   @IsString()
   full_name: string;
