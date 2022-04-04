@@ -10,7 +10,6 @@ export class AppController {
   });
 
   constructor(private readonly appService: AppService) {}
-  //TODO validation for webhook request
   @Post('/github')
   webhookGithub(@Body() body: GithubPayloadDto): number {
     this.logger.verbose('Got webhook from Github');
@@ -20,8 +19,6 @@ export class AppController {
   @Post('/bitbucket')
   webhookBitbucket(@Body() body: BitbucketPayloadDto): number {
     this.logger.verbose('Got webhook from Bitbucket');
-    console.log(body);
-    return 0;
-    //return this.appService.webhookBitbucket(body);
+    return this.appService.webhookBitbucket(body);
   }
 }
