@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class ConfigurationActorDataDto {
   @IsString()
@@ -6,11 +6,6 @@ export class ConfigurationActorDataDto {
 
   @IsString()
   username: string;
-
-  @IsString()
-  @IsEmail()
-  @IsOptional()
-  email?: string;
 
   @IsString()
   id: string;

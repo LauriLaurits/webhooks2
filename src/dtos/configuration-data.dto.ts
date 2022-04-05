@@ -1,4 +1,11 @@
-import { IsDate, IsNotEmptyObject, IsObject, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsNotEmptyObject,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ConfigurationActorDataDto } from './configuration-actor-data.dto';
 
 export class ConfigurationDataDto {
@@ -13,6 +20,10 @@ export class ConfigurationDataDto {
 
   @IsDate()
   date: Date;
+
+  @IsOptional()
+  @IsEmail({ allow_display_name: true })
+  email?: string;
 
   @IsObject()
   @IsNotEmptyObject()
