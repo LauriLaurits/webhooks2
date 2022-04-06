@@ -7,6 +7,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ConfigurationActorDataDto } from './configuration-actor-data.dto';
+import { Type } from 'class-transformer';
 
 export class ConfigurationDataDto {
   @IsString()
@@ -19,6 +20,7 @@ export class ConfigurationDataDto {
   sshUrl: string;
 
   @IsDate()
+  @Type(() => Date)
   date: Date;
 
   @IsOptional()

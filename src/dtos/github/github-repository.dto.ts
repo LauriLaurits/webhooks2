@@ -1,9 +1,4 @@
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class GithubRepositoryDto {
   @IsNotEmpty()

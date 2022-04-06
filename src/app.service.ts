@@ -18,7 +18,7 @@ export class AppService {
       actor: {
         displayName: body.head_commit.author.name,
         username: body.head_commit.author.username,
-        email: body.head_commit.author.email,
+        //email: body.head_commit.author.email,
         id: body.head_commit.id,
       },
     };
