@@ -19,6 +19,7 @@ export class AppController {
   }
 
   @Post('/bitbucket')
+  @UsePipes(new CustomValidationPipe())
   webhookBitbucket(@Body() body: BitbucketPayloadDto): number {
     this.logger.verbose('Got webhook from Bitbucket');
     return this.appService.webhookBitbucket(body);

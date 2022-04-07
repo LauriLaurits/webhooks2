@@ -1,12 +1,4 @@
-import {
-  IsDate,
-  IsEmail,
-  IsNotEmptyObject,
-  IsObject,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { ConfigurationActorDataDto } from './configuration-actor-data.dto';
+import { IsDate, IsEmail, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ConfigurationDataDto {
@@ -27,7 +19,12 @@ export class ConfigurationDataDto {
   @IsEmail({ allow_display_name: true })
   email?: string;
 
-  @IsObject()
-  @IsNotEmptyObject()
-  actor: ConfigurationActorDataDto;
+  @IsString()
+  displayName: string;
+
+  @IsString()
+  username: string;
+
+  @IsString()
+  id: string;
 }

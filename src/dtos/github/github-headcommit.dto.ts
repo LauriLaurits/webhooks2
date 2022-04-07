@@ -4,8 +4,8 @@ import { GithubAuthorDto } from './github-author.dto';
 
 export class GithubHeadCommitDto {
   @IsNotEmpty()
-  @IsString()
-  timestamp: string;
+  @Type(() => Date)
+  timestamp: Date;
 
   @IsNotEmpty()
   @IsString()
