@@ -2,15 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
 import { ConfigurationDataDto } from './dtos/configuration-data.dto';
-import { mkdtempSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import {
   ChildProcessWithoutNullStreams,
   spawn,
   SpawnOptionsWithoutStdio,
 } from 'child_process';
 import { ExecutionResultDto } from './dtos/execution-result.dto';
+import { existsSync, mkdtempSync, rmSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 @Injectable()
 export class TaskRunnerService {
@@ -67,11 +67,24 @@ export class TaskRunnerService {
     let switchBranch: ExecutionResultDto = null;
     let buildConfig;
     //TODO checks if /build-config.js is there if not clean tmpDir
+
+    console.log('RunConf', runConfiguration);
+
     try {
-      tmpDir = this.makeTemporaryDirectory();
+      tmpDir = await this.makeTemporaryDirectory();
       cloneResult = await this.cloneRepository(runConfiguration, tmpDir);
       switchBranch = await this.checkoutBranch(runConfiguration, tmpDir);
-      buildConfig = this.getBuildConfig(tmpDir);
+      buildConfig = await this.getBuildConfig(tmpDir);
+      console.log(buildConfig);
+      if (buildConfig.branchesToFollow) {
+        this.logger.verbose(`Going to build`);
+      } else {
+        this.logger.verbose(`Not going to build deleting tmpDir: ${tmpDir}`);
+        rmSync(tmpDir, { recursive: true });
+        // this.lastTaskStartedAt = null;
+      }
+      //TODO
+
       //TODO execute build commands
       console.log('BuildConfig clientName: ' + buildConfig.clientName);
       console.log('BuildConfig projectName: ' + buildConfig.projectName);
@@ -87,11 +100,12 @@ export class TaskRunnerService {
     } catch (e) {
       this.logger.error(e);
     }
+
     //TODO Delete tempDir
 
     // Delete tmp directory after use
-    // Import existsSync, rmSync
-    /* if (existsSync(tmpDir)) {
+    /*  Import existsSync, rmSync
+     if (existsSync(tmpDir)) {
       rmSync(tmpDir, {
         recursive: true,
       });
@@ -99,6 +113,8 @@ export class TaskRunnerService {
       this.lastTaskStartedAt = null;
     }*/
   }
+
+  // Helper Functions
 
   private async runCmd(
     cmd: string,
@@ -135,8 +151,14 @@ export class TaskRunnerService {
     });
   }
 
-  makeTemporaryDirectory() {
-    return mkdtempSync(join(tmpdir(), 'tempDir-'));
+  private async makeTemporaryDirectory() {
+    try {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'tempDir-'));
+      this.logger.verbose(`Creating tempDir: ${tmpDir}`);
+      return tmpDir;
+    } catch (e) {
+      this.logger.error(`Failed to create tmpDir. Error: ${e}`);
+    }
   }
 
   private async cloneRepository(
@@ -156,7 +178,12 @@ export class TaskRunnerService {
       cwd: tmpDir,
     });
   }
-  getBuildConfig(tmpDir) {
-    return require(tmpDir + '/build-config.js');
+  private async getBuildConfig(tmpDir: string) {
+    const buildConfig = tmpDir + '/build-config.js';
+    const exist = existsSync(buildConfig);
+    if (exist) {
+      return require(buildConfig);
+    }
+    this.logger.error(`build-config missing`);
   }
 }
